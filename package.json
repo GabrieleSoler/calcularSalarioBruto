@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "typescript": "^4.6.3"
+  },
+  "name": "calcularsalariobruto",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/node": "^17.0.23"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabrieleSoler/calcularSalarioBruto.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GabrieleSoler/calcularSalarioBruto/issues"
+  },
+  "homepage": "https://github.com/GabrieleSoler/calcularSalarioBruto#readme",
+  "description": ""
+}
