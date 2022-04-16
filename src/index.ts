@@ -1,7 +1,6 @@
 /* npx tsc src\index.ts */
-
 //calculo INSS
-let nomeEmpregado: string = 'Ellen';
+let nomeEmpregado: string = 'Gabis';
 let aliquotaBase: number;
 let valorBaseFaixa: number;
 let valorAgregado: number;
