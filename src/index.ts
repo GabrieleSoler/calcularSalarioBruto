@@ -2,13 +2,17 @@
 node src\index.js nome salarioBruto horaExtra
 */
 interface DadosUsuario {
-    nome: String;
-    salarioBase: number;
-    valorHorasExtras: number; 
-    aliquotaBase: number;
-    valorBaseFaixa: number;
-    valorAgregado: number;
-    faixaDescontoInss: number;
+    nome: String,
+    salarioBase: number,
+    valorHorasExtras: number, 
+    aliquotaBase: number,
+    valorBaseFaixa: number,
+    valorAgregado: number,
+    faixaDescontoInss: number,
+    descontoIr: number,
+    faixaDescontoIr: number,
+    valorDescontadoIr: number,
+    parcelaDedutivelIr: number
 }
 
 let dadoUsuario: DadosUsuario = {
@@ -18,7 +22,11 @@ let dadoUsuario: DadosUsuario = {
     aliquotaBase: 0,
     valorBaseFaixa: 0,
     valorAgregado: 0,
-    faixaDescontoInss: 0 
+    faixaDescontoInss: 0 ,
+    descontoIr: 0,
+    faixaDescontoIr: 0,
+    valorDescontadoIr: 0,
+    parcelaDedutivelIr: 0
 }
 
 function tabelaInss(salario: number): void{
@@ -47,10 +55,39 @@ function tabelaInss(salario: number): void{
 function descontoInss(salario: number) {
     return ((dadoUsuario.salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
 }
+function descontoIr() {
+    
+    if(valorComDescontoInss <= 1903.98 ) {
+        dadoUsuario.descontoIr = 0;
+        dadoUsuario.parcelaDedutivelIr = 0;
+    }
+    if(valorComDescontoInss >= 1903.99 && valorComDescontoInss <= 2826.65 ) {
+        dadoUsuario.descontoIr = 0.075;
+        dadoUsuario.parcelaDedutivelIr = 142.80;
+    }
+    if(valorComDescontoInss >= 2826.66 && valorComDescontoInss <= 3751.05 ) {
+        dadoUsuario.descontoIr = 0.15;
+        dadoUsuario.parcelaDedutivelIr = 354.80;
+    }
+    if(valorComDescontoInss >= 3751.06 && valorComDescontoInss <= 4664.68 ) {
+        dadoUsuario.descontoIr = 0.225;
+        dadoUsuario.parcelaDedutivelIr = 636.13;
+    } 
+    if(valorComDescontoInss > 4664.68) {
+        dadoUsuario.descontoIr = 0.275;
+        dadoUsuario.parcelaDedutivelIr = 869.36;
+    }
+}
 
 tabelaInss(dadoUsuario.salarioBase);
-
-const valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
+//Calculo para saber o Desconto do Inss
+var valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
 dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/dadoUsuario.salarioBase);
 
-console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2));
+let valorComDescontoInss = dadoUsuario.salarioBase - valorDescontoInss
+
+descontoIr();
+//Calculo para saber o valor do desconto do Ir
+dadoUsuario.valorDescontadoIr = ((valorComDescontoInss * dadoUsuario.descontoIr ) - dadoUsuario.parcelaDedutivelIr ) 
+
+console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + '\n Valor do Desconto Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2));
