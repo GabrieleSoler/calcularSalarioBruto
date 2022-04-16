@@ -1,62 +1,38 @@
-//calculo INSS
-var dadosUsuario = /** @class */ (function () {
-    function dadosUsuario() {
-        this.dadosUsuario = {};
-    }
-    dadosUsuario.prototype.setNome = function (novoNome) {
-        this.dadosUsuario.nome = novoNome;
-    };
-    dadosUsuario.prototype.setSalarioBase = function (novoSalarioBase) {
-        this.dadosUsuario.salarioBase = novoSalarioBase;
-    };
-    dadosUsuario.prototype.setValorHorasExtras = function (novoValorHorasExtras) {
-        this.dadosUsuario.valorHorasExtras = novoValorHorasExtras;
-    };
-    dadosUsuario.prototype.setFaixaDescontoInss = function (novoFaixaDescontoInss) {
-        this.dadosUsuario.faixaDescontoInss = novoFaixaDescontoInss;
-    };
-    dadosUsuario.prototype.setDescontadoInss = function (novoDescontadoInss) {
-        this.dadosUsuario.valorDescontadoInss = novoDescontadoInss;
-    };
-    dadosUsuario.prototype.setFaixaDescontoIr = function (novoFaixaDescontoIr) {
-        this.dadosUsuario.faixaDescontoIr = novoFaixaDescontoIr;
-    };
-    dadosUsuario.prototype.setValorDescontadoIr = function (novoValorDescontadoIr) {
-        this.dadosUsuario.valorDescontadoIr = novoValorDescontadoIr;
-    };
-    dadosUsuario.prototype.setSalarioLiquido = function (novoSalarioLiquido) {
-        this.dadosUsuario.salarioLiquido = novoSalarioLiquido;
-    };
-    return dadosUsuario;
-}());
-var nomeEmpregado = 'Gabis';
-var aliquotaBase;
-var valorBaseFaixa;
-var valorAgregado;
-var salarioBruto = 1500;
+var dadoUsuario = {
+    nome: process.argv[2],
+    salarioBase: parseInt(process.argv[3]),
+    valorHorasExtras: parseInt(process.argv[4]),
+    aliquotaBase: 0,
+    valorBaseFaixa: 0,
+    valorAgregado: 0,
+    faixaDescontoInss: 0
+};
 function tabelaInss(salario) {
     if (salario <= 1212.00) {
-        aliquotaBase = 0.075;
+        dadoUsuario.aliquotaBase = 0.075;
+        dadoUsuario.valorBaseFaixa = 0;
+        dadoUsuario.valorAgregado = 0;
     }
     if (salario >= 1212.01 && salario <= 2427.35) {
-        aliquotaBase = 0.9;
-        valorBaseFaixa = 1212.01;
-        valorAgregado = 90.90;
+        dadoUsuario.aliquotaBase = 0.9;
+        dadoUsuario.valorBaseFaixa = 1212.01;
+        dadoUsuario.valorAgregado = 90.90;
     }
     if (salario >= 2427.36 && salario <= 3641.03) {
-        aliquotaBase = 0.12;
-        valorBaseFaixa = 2427.36;
-        valorAgregado = 200.28;
+        dadoUsuario.aliquotaBase = 0.12;
+        dadoUsuario.valorBaseFaixa = 2427.36;
+        dadoUsuario.valorAgregado = 200.28;
     }
     if (salario >= 3641.04 && salario <= 7087.22) {
-        aliquotaBase = 0.14;
-        valorBaseFaixa = 3641.04;
-        valorAgregado = 345.92;
+        dadoUsuario.aliquotaBase = 0.14;
+        dadoUsuario.valorBaseFaixa = 3641.04;
+        dadoUsuario.valorAgregado = 345.92;
     }
 }
-function descontoInss(salarioBruto) {
-    return ((salarioBruto - valorBaseFaixa) * aliquotaBase) + valorAgregado;
+function descontoInss(salario) {
+    return ((dadoUsuario.salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase) + dadoUsuario.valorAgregado;
 }
-tabelaInss(salarioBruto);
-var valorDescontoInss = descontoInss(salarioBruto);
-console.log('Nome: ' + nomeEmpregado + ' | Salario bruto: ' + salarioBruto + ' | Faixa de desconto do INSS: ' + aliquotaBase + ' | Valor descontado para o INSS: ' + valorDescontoInss);
+tabelaInss(dadoUsuario.salarioBase);
+var valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
+dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100) / dadoUsuario.salarioBase);
+console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2));

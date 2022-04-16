@@ -1,89 +1,56 @@
-/* npx tsc src\index.ts */
+/* npx tsc src\index.ts ou npm run start 
+node src\index.js nome salarioBruto horaExtra
+*/
 interface DadosUsuario {
     nome: String;
     salarioBase: number;
-    valorHorasExtras: number;
+    valorHorasExtras: number; 
+    aliquotaBase: number;
+    valorBaseFaixa: number;
+    valorAgregado: number;
     faixaDescontoInss: number;
-    valorDescontadoInss: number;
-    faixaDescontoIr: number;
-    valorDescontadoIr: number;
-    salarioLiquido: number;    
-}
-//calculo INSS
-
-class dadosUsuario {
-    constructor() {
-        
-    }
-
-private dadosUsuario = {} as DadosUsuario;
-
-    setNome(novoNome: string): void {
-        this.dadosUsuario.nome = novoNome;
-    }
-
-    setSalarioBase(novoSalarioBase: number): void {
-        this.dadosUsuario.salarioBase = novoSalarioBase;
-    }
-
-    setValorHorasExtras(novoValorHorasExtras: number): void {
-        this.dadosUsuario.valorHorasExtras = novoValorHorasExtras;
-    }
-
-    setFaixaDescontoInss(novoFaixaDescontoInss: number): void {
-        this.dadosUsuario.faixaDescontoInss = novoFaixaDescontoInss;
-    }
-
-    setDescontadoInss(novoDescontadoInss: number): void {
-        this.dadosUsuario.valorDescontadoInss = novoDescontadoInss;
-    }
-
-    setFaixaDescontoIr(novoFaixaDescontoIr: number): void {
-        this.dadosUsuario.faixaDescontoIr = novoFaixaDescontoIr;
-    }
-
-    setValorDescontadoIr(novoValorDescontadoIr: number): void {
-        this.dadosUsuario.valorDescontadoIr = novoValorDescontadoIr;
-    }
-
-    setSalarioLiquido(novoSalarioLiquido: number): void {
-        this.dadosUsuario.salarioLiquido = novoSalarioLiquido;
-    }
 }
 
-
-let nomeEmpregado: string = 'Gabis';
-let aliquotaBase: number;
-let valorBaseFaixa: number;
-let valorAgregado: number;
-let salarioBruto: number = 1500;
+let dadoUsuario: DadosUsuario = {
+    nome: process.argv[2],
+    salarioBase: parseInt(process.argv[3]),
+    valorHorasExtras: parseInt(process.argv[4]),
+    aliquotaBase: 0,
+    valorBaseFaixa: 0,
+    valorAgregado: 0,
+    faixaDescontoInss: 0 
+}
 
 function tabelaInss(salario: number): void{
     if (salario <= 1212.00){
-        aliquotaBase =  0.075;
+        dadoUsuario.aliquotaBase =  0.075;
+        dadoUsuario.valorBaseFaixa = 0;
+        dadoUsuario.valorAgregado = 0;
     }
     if (salario >= 1212.01 && salario <= 2427.35){
-        aliquotaBase = 0.9;
-        valorBaseFaixa = 1212.01;
-        valorAgregado = 90.90;
+        dadoUsuario.aliquotaBase = 0.9;
+        dadoUsuario.valorBaseFaixa = 1212.01;
+        dadoUsuario.valorAgregado = 90.90;
     }
     if (salario >= 2427.36 && salario <= 3641.03){
-        aliquotaBase = 0.12;
-        valorBaseFaixa = 2427.36;
-        valorAgregado = 200.28;
+        dadoUsuario.aliquotaBase = 0.12;
+        dadoUsuario.valorBaseFaixa = 2427.36;
+        dadoUsuario.valorAgregado = 200.28;
     }
     if (salario >= 3641.04 && salario <= 7087.22){
-        aliquotaBase = 0.14;
-        valorBaseFaixa = 3641.04;
-        valorAgregado = 345.92;
+        dadoUsuario.aliquotaBase = 0.14;
+        dadoUsuario.valorBaseFaixa = 3641.04;
+        dadoUsuario.valorAgregado = 345.92;
     }
 }
-function descontoInss(salarioBruto: number) {
-    return ((salarioBruto - valorBaseFaixa) * aliquotaBase ) + valorAgregado;
+
+function descontoInss(salario: number) {
+    return ((dadoUsuario.salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
 }
 
-tabelaInss(salarioBruto);
+tabelaInss(dadoUsuario.salarioBase);
 
-const valorDescontoInss = descontoInss(salarioBruto);
+const valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
+dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/dadoUsuario.salarioBase);
 
-console.log('Nome: ' + nomeEmpregado + ' | Salario bruto: ' + salarioBruto + ' | Faixa de desconto do INSS: ' + aliquotaBase + ' | Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2))
+console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2));
