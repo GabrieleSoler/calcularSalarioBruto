@@ -55,8 +55,8 @@ function tabelaInss(salario: number): void{
 function descontoInss(salario: number) {
     return ((dadoUsuario.salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
 }
+
 function descontoIr() {
-    
     if(valorComDescontoInss <= 1903.98 ) {
         dadoUsuario.descontoIr = 0;
         dadoUsuario.parcelaDedutivelIr = 0;
@@ -82,6 +82,7 @@ function descontoIr() {
 tabelaInss(dadoUsuario.salarioBase);
 //Calculo para saber o Desconto do Inss
 var valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
+
 dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/dadoUsuario.salarioBase);
 
 let valorComDescontoInss = dadoUsuario.salarioBase - valorDescontoInss
@@ -90,4 +91,8 @@ descontoIr();
 //Calculo para saber o valor do desconto do Ir
 dadoUsuario.valorDescontadoIr = ((valorComDescontoInss * dadoUsuario.descontoIr ) - dadoUsuario.parcelaDedutivelIr ) 
 
-console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + '\n Valor do Desconto Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2));
+//Calculo pra saber a faixa de desconto Ir
+dadoUsuario.faixaDescontoIr = ((dadoUsuario.valorDescontadoIr * 100)/dadoUsuario.salarioBase);
+
+
+console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + ' \n Faixa de desconto do IR: ' + dadoUsuario.faixaDescontoIr.toFixed(2) + '% \n Valor descontado para o Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2));
