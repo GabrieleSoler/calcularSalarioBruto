@@ -1,7 +1,7 @@
 var dadoUsuario = {
     nome: process.argv[2],
     salarioBase: parseInt(process.argv[3]),
-    valorHorasExtras: parseInt(process.argv[4]),
+    quantidadeHorasExtras: parseInt(process.argv[4]),
     aliquotaBase: 0,
     valorBaseFaixa: 0,
     valorAgregado: 0,
@@ -9,7 +9,8 @@ var dadoUsuario = {
     descontoIr: 0,
     faixaDescontoIr: 0,
     valorDescontadoIr: 0,
-    parcelaDedutivelIr: 0
+    parcelaDedutivelIr: 0,
+    salarioLiquido: 0
 };
 function tabelaInss(salario) {
     if (salario <= 1212.00) {
@@ -66,4 +67,10 @@ var valorComDescontoInss = dadoUsuario.salarioBase - valorDescontoInss;
 descontoIr();
 //Calculo para saber o valor do desconto do Ir
 dadoUsuario.valorDescontadoIr = ((valorComDescontoInss * dadoUsuario.descontoIr) - dadoUsuario.parcelaDedutivelIr);
-console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + ' \n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + '\n Valor do Desconto Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2));
+//Calculo pra saber a faixa de desconto Ir
+dadoUsuario.faixaDescontoIr = ((dadoUsuario.valorDescontadoIr * 100) / dadoUsuario.salarioBase);
+var valorPorHoraTrabalhada = dadoUsuario.salarioBase / 200;
+var valorHorasExtras = valorPorHoraTrabalhada * dadoUsuario.quantidadeHorasExtras;
+//Calculo Salario Liquido
+dadoUsuario.salarioLiquido = dadoUsuario.salarioBase - dadoUsuario.descontoIr - valorDescontoInss + valorHorasExtras;
+console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + '\n Valor total de hora extra: ' + valorHorasExtras + '\n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + ' \n Faixa de desconto do IR: ' + dadoUsuario.faixaDescontoIr.toFixed(2) + '% \n Valor descontado para o Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2) + 'Valor do salário líquido: ' + dadoUsuario.salarioLiquido);
