@@ -1,9 +1,9 @@
-/* npx tsc src\index.ts ou npm run start 
-node src\index.js nome salarioBruto horaExtra
+/* 
+    node src/index.js Nome SalarioBruto horasExtras
 */
 interface DadosUsuario {
     nome: String,
-    salarioBase: number,
+    salarioBruto: number,
     quantidadeHorasExtras: number, 
     aliquotaBase: number,
     valorBaseFaixa: number,
@@ -18,27 +18,27 @@ interface DadosUsuario {
 
 let dadoUsuario: DadosUsuario = {
     nome: process.argv[2],
-    salarioBase: parseInt(process.argv[3]),
+    salarioBruto: parseInt(process.argv[3]),
     quantidadeHorasExtras: parseInt(process.argv[4]),
-    aliquotaBase: 0,
-    valorBaseFaixa: 0,
-    valorAgregado: 0,
-    faixaDescontoInss: 0 ,
-    descontoIr: 0,
-    faixaDescontoIr: 0,
-    valorDescontadoIr: 0,
-    parcelaDedutivelIr: 0,
-    salarioLiquido: 0
+    aliquotaBase: null,
+    valorBaseFaixa: null,
+    valorAgregado: null,
+    faixaDescontoInss: null,
+    descontoIr: null,
+    faixaDescontoIr: null,
+    valorDescontadoIr: null,
+    parcelaDedutivelIr: null,
+    salarioLiquido: null
 }
 
 function tabelaInss(salario: number): void{
     if (salario <= 1212.00){
         dadoUsuario.aliquotaBase =  0.075;
-        dadoUsuario.valorBaseFaixa = 0;
-        dadoUsuario.valorAgregado = 0;
+        dadoUsuario.valorBaseFaixa = null;
+        dadoUsuario.valorAgregado = null;
     }
     if (salario >= 1212.01 && salario <= 2427.35){
-        dadoUsuario.aliquotaBase = 0.9;
+        dadoUsuario.aliquotaBase = 0.09;
         dadoUsuario.valorBaseFaixa = 1212.01;
         dadoUsuario.valorAgregado = 90.90;
     }
@@ -52,56 +52,75 @@ function tabelaInss(salario: number): void{
         dadoUsuario.valorBaseFaixa = 3641.04;
         dadoUsuario.valorAgregado = 345.92;
     }
+    if (salario >= 7087.23){
+        dadoUsuario.aliquotaBase = null;
+        dadoUsuario.valorBaseFaixa = 7087.23;
+        dadoUsuario.valorAgregado = 828.39;
+    }
+
 }
 
 function descontoInss(salario: number) {
-    return ((dadoUsuario.salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
+    return ((salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
 }
 
-function descontoIr() {
-    if(valorComDescontoInss <= 1903.98 ) {
-        dadoUsuario.descontoIr = 0;
-        dadoUsuario.parcelaDedutivelIr = 0;
+function descontoIr(salarioComDescontoInss: number) {
+    if(salarioComDescontoInss <= 1903.98 ) {
+        dadoUsuario.descontoIr = null;
+        dadoUsuario.parcelaDedutivelIr = null;
     }
-    if(valorComDescontoInss >= 1903.99 && valorComDescontoInss <= 2826.65 ) {
+    if(salarioComDescontoInss >= 1903.99 && salarioComDescontoInss <= 2826.65 ) {
         dadoUsuario.descontoIr = 0.075;
         dadoUsuario.parcelaDedutivelIr = 142.80;
     }
-    if(valorComDescontoInss >= 2826.66 && valorComDescontoInss <= 3751.05 ) {
+    if(salarioComDescontoInss >= 2826.66 && salarioComDescontoInss <= 3751.05 ) {
         dadoUsuario.descontoIr = 0.15;
         dadoUsuario.parcelaDedutivelIr = 354.80;
     }
-    if(valorComDescontoInss >= 3751.06 && valorComDescontoInss <= 4664.68 ) {
+    if(salarioComDescontoInss >= 3751.06 && salarioComDescontoInss <= 4664.68 ) {
         dadoUsuario.descontoIr = 0.225;
         dadoUsuario.parcelaDedutivelIr = 636.13;
     } 
-    if(valorComDescontoInss > 4664.68) {
+    if(salarioComDescontoInss > 4664.68) {
         dadoUsuario.descontoIr = 0.275;
         dadoUsuario.parcelaDedutivelIr = 869.36;
     }
 }
+/*
+    Referencia para calculo do valor da hora extra -> https://tangerino.com.br/blog/rh/hora-extra/
+    CONSIDERAÇÕES: base mensal de horas é 200,
+                   periodo de segunda a sexta, 
+                   entre 05:00hrs e 22:00hrs.
+                   
+    - Hora extra vale 50% a mais que a hora normal de trabalho
+*/
+var valorPorHoraExtra = (dadoUsuario.salarioBruto / 200) * 1.5; 
 
-tabelaInss(dadoUsuario.salarioBase);
-//Calculo para saber o Desconto do Inss
-var valorDescontoInss = descontoInss(dadoUsuario.salarioBase);
+var valorHorasExtras = valorPorHoraExtra * dadoUsuario.quantidadeHorasExtras;
 
-dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/dadoUsuario.salarioBase);
+var salarioBase = (dadoUsuario.salarioBruto + valorHorasExtras);
 
-let valorComDescontoInss = dadoUsuario.salarioBase - valorDescontoInss
+tabelaInss(salarioBase);
 
-descontoIr();
+//DESCONTO DO INSS
+var valorDescontoInss = descontoInss(salarioBase);
 
-//Calculo para saber o valor do desconto do Ir
+dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/salarioBase);
+
+let valorComDescontoInss = salarioBase - valorDescontoInss;
+
+//DESCONTO DO IR
+descontoIr(valorComDescontoInss);
+
 dadoUsuario.valorDescontadoIr = ((valorComDescontoInss * dadoUsuario.descontoIr ) - dadoUsuario.parcelaDedutivelIr ) 
 
-//Calculo pra saber a faixa de desconto Ir
-dadoUsuario.faixaDescontoIr = ((dadoUsuario.valorDescontadoIr * 100)/dadoUsuario.salarioBase);
+dadoUsuario.faixaDescontoIr = ((dadoUsuario.valorDescontadoIr * 100)/valorComDescontoInss);
 
-var valorPorHoraTrabalhada = dadoUsuario.salarioBase / 200 
+//SALARIO LIQUIDO
+dadoUsuario.salarioLiquido = (salarioBase - dadoUsuario.valorDescontadoIr - valorDescontoInss);
 
-var valorHorasExtras = valorPorHoraTrabalhada * dadoUsuario.quantidadeHorasExtras
-
-//Calculo Salario Liquido
-dadoUsuario.salarioLiquido = dadoUsuario.salarioBase - dadoUsuario.descontoIr - valorDescontoInss + valorHorasExtras
-
-console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: ' + dadoUsuario.salarioBase + '\n Valor total de hora extra: ' + valorHorasExtras + '\n Faixa de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(1) + '% \n Valor descontado para o INSS: ' + valorDescontoInss.toFixed(2) + ' \n Faixa de desconto do IR: ' + dadoUsuario.faixaDescontoIr.toFixed(2) + '% \n Valor descontado para o Ir: ' + dadoUsuario.valorDescontadoIr.toFixed(2) + 'Valor do salário líquido: ' + dadoUsuario.salarioLiquido);
+if (valorComDescontoInss < 1903.98){
+    console.log(dadoUsuario.nome + ' você esta isento de receber o recolhimento do Imposto de Renda!');
+}else{
+    console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: R$' + dadoUsuario.salarioBruto + '\n Valor total de hora extra: R$' + valorHorasExtras + ' \n Porcentagem de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(2) + '% \n Valor descontado para o INSS: R$' + valorDescontoInss.toFixed(2) + ' \n Porcentagem de desconto do IR: ' + dadoUsuario.faixaDescontoIr.toFixed(2) + '% \n Valor descontado para o Ir: R$' + dadoUsuario.valorDescontadoIr.toFixed(2) + ' \n Valor do salário líquido: R$' + dadoUsuario.salarioLiquido.toFixed(2));
+}
