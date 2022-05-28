@@ -5,6 +5,8 @@ interface DadosUsuario {
     nome: String,
     salarioBruto: number,
     quantidadeHorasExtras: number, 
+    valorHorasExtras: number,
+    salarioBase: number,
     aliquotaBase: number,
     valorBaseFaixa: number,
     valorAgregado: number,
@@ -12,115 +14,139 @@ interface DadosUsuario {
     descontoIr: number,
     faixaDescontoIr: number,
     valorDescontadoIr: number,
+    valorDescontadoInss: number,
     parcelaDedutivelIr: number,
     salarioLiquido: number
 }
 
-let dadoUsuario: DadosUsuario = {
-    nome: process.argv[2],
-    salarioBruto: parseInt(process.argv[3]),
-    quantidadeHorasExtras: parseInt(process.argv[4]),
-    aliquotaBase: null,
-    valorBaseFaixa: null,
-    valorAgregado: null,
-    faixaDescontoInss: null,
-    descontoIr: null,
-    faixaDescontoIr: null,
-    valorDescontadoIr: null,
-    parcelaDedutivelIr: null,
-    salarioLiquido: null
+class Usuario {
+    constructor(nome: string, salario: number, horasExtrasAnual: number){
+        this.setNome(nome),
+        this.setSalarioBruto(salario);
+        this.setSalarioLiquido();
+        this.setQuantidadeHorasExtras(horasExtrasAnual);
+        this.setTotalHorasExtras();
+        this.setSalarioBase()
+        this.setDescontoInss();
+        this.setFaixaDescontoInss();
+        this.setDescontoIr()
+        this.setFaixaDescontoIr();
+    }
+
+    private dadosUsuario = {} as DadosUsuario;
+
+    setNome(nome: string): void {
+        this.dadosUsuario.nome = nome;
+    }
+    setSalarioBruto(salario: number): void {
+        this.dadosUsuario.salarioBruto = salario;
+    }
+    setQuantidadeHorasExtras(horas: number): void {
+        this.dadosUsuario.quantidadeHorasExtras = horas;
+    }
+
+    setTotalHorasExtras(): void {
+        let valorPorHoraExtra = (this.dadosUsuario.salarioBruto / 200) * 1.5;
+        this.dadosUsuario.valorHorasExtras = valorPorHoraExtra * this.dadosUsuario.quantidadeHorasExtras;   
+    }
+
+    setSalarioBase(): void {
+        this.dadosUsuario.salarioBase = this.dadosUsuario.salarioBruto + this.dadosUsuario.valorHorasExtras;
+    }
+
+    setDescontoInss(): void {
+
+        if (this.dadosUsuario.salarioBase <= 1212.00){
+            this.dadosUsuario.aliquotaBase =  0.075;
+            this.dadosUsuario.valorBaseFaixa = null;
+            this.dadosUsuario.valorAgregado = null;
+        }
+        if (this.dadosUsuario.salarioBase >= 1212.01 && this.dadosUsuario.salarioBase <= 2427.35){
+            this.dadosUsuario.aliquotaBase = 0.09;
+            this.dadosUsuario.valorBaseFaixa = 1212.01;
+            this.dadosUsuario.valorAgregado = 90.90;
+        }
+        if (this.dadosUsuario.salarioBase >= 2427.36 && this.dadosUsuario.salarioBase <= 3641.03){
+            this.dadosUsuario.aliquotaBase = 0.12;
+            this.dadosUsuario.valorBaseFaixa = 2427.36;
+            this.dadosUsuario.valorAgregado = 200.28;
+        }
+        if (this.dadosUsuario.salarioBase >= 3641.04 && this.dadosUsuario.salarioBase <= 7087.22){
+            this.dadosUsuario.aliquotaBase = 0.14;
+            this.dadosUsuario.valorBaseFaixa = 3641.04;
+            this.dadosUsuario.valorAgregado = 345.92;
+        }
+        if (this.dadosUsuario.salarioBase >= 7087.23){
+            this.dadosUsuario.aliquotaBase = null;
+            this.dadosUsuario.valorBaseFaixa = 7087.23;
+            this.dadosUsuario.valorAgregado = 828.39;
+        }
+
+       this.dadosUsuario.valorDescontadoInss =  ((this.dadosUsuario.salarioBase - this.dadosUsuario.valorBaseFaixa) * this.dadosUsuario.aliquotaBase ) + this.dadosUsuario.valorAgregado; 
+    }
+
+    setFaixaDescontoInss(): void {
+        this.dadosUsuario.faixaDescontoInss = ((this.dadosUsuario.valorDescontadoIr * 100)/this.dadosUsuario.salarioBase);
+    }
+
+    setDescontoIr(): void {
+        var salarioComDescontoInss = (this.dadosUsuario.salarioBase - this.dadosUsuario.valorDescontadoInss);
+
+        if(salarioComDescontoInss <= 1903.98 ) {
+            this.dadosUsuario.descontoIr = null;
+            this.dadosUsuario.parcelaDedutivelIr = null;
+        }
+        if(salarioComDescontoInss >= 1903.99 && salarioComDescontoInss <= 2826.65 ) {
+            this.dadosUsuario.descontoIr = 0.075;
+            this.dadosUsuario.parcelaDedutivelIr = 142.80;
+        }
+        if(salarioComDescontoInss >= 2826.66 && salarioComDescontoInss <= 3751.05 ) {
+            this.dadosUsuario.descontoIr = 0.15;
+            this.dadosUsuario.parcelaDedutivelIr = 354.80;
+        }
+        if(salarioComDescontoInss >= 3751.06 && salarioComDescontoInss <= 4664.68 ) {
+            this.dadosUsuario.descontoIr = 0.225;
+            this.dadosUsuario.parcelaDedutivelIr = 636.13;
+        } 
+        if(salarioComDescontoInss > 4664.68) {
+            this.dadosUsuario.descontoIr = 0.275;
+            this.dadosUsuario.parcelaDedutivelIr = 869.36;
+        }
+
+        this.dadosUsuario.valorDescontadoIr = ((salarioComDescontoInss * this.dadosUsuario.descontoIr ) - this.dadosUsuario.parcelaDedutivelIr); 
+    }
+    setFaixaDescontoIr(): void {
+        this.dadosUsuario.faixaDescontoIr = ((this.dadosUsuario.valorDescontadoIr * 100)/(this.dadosUsuario.salarioBase - this.dadosUsuario.valorDescontadoInss));
+    }
+
+    setSalarioLiquido(): void {
+        this.dadosUsuario.salarioLiquido = (this.dadosUsuario.salarioBase - this.dadosUsuario.valorDescontadoInss - this.dadosUsuario.valorDescontadoIr);
+
+    }
+
+    getDadosUsuario(): DadosUsuario {
+        return this.dadosUsuario;
+      }
 }
 
-function tabelaInss(salario: number): void{
-    if (salario <= 1212.00){
-        dadoUsuario.aliquotaBase =  0.075;
-        dadoUsuario.valorBaseFaixa = null;
-        dadoUsuario.valorAgregado = null;
-    }
-    if (salario >= 1212.01 && salario <= 2427.35){
-        dadoUsuario.aliquotaBase = 0.09;
-        dadoUsuario.valorBaseFaixa = 1212.01;
-        dadoUsuario.valorAgregado = 90.90;
-    }
-    if (salario >= 2427.36 && salario <= 3641.03){
-        dadoUsuario.aliquotaBase = 0.12;
-        dadoUsuario.valorBaseFaixa = 2427.36;
-        dadoUsuario.valorAgregado = 200.28;
-    }
-    if (salario >= 3641.04 && salario <= 7087.22){
-        dadoUsuario.aliquotaBase = 0.14;
-        dadoUsuario.valorBaseFaixa = 3641.04;
-        dadoUsuario.valorAgregado = 345.92;
-    }
-    if (salario >= 7087.23){
-        dadoUsuario.aliquotaBase = null;
-        dadoUsuario.valorBaseFaixa = 7087.23;
-        dadoUsuario.valorAgregado = 828.39;
-    }
+function modelo(nome: string, salario: number, horasExtrasAnual: number): void {
 
+    const usuario = new Usuario(nome, salario, horasExtrasAnual);
+  
+    console.log(usuario.getDadosUsuario());
+  
 }
+modelo(process.argv[2], parseInt(process.argv[3]), parseInt(process.argv[4]));
 
-function descontoInss(salario: number) {
-    return ((salarioBase - dadoUsuario.valorBaseFaixa) * dadoUsuario.aliquotaBase ) + dadoUsuario.valorAgregado;
-}
-
-function descontoIr(salarioComDescontoInss: number) {
-    if(salarioComDescontoInss <= 1903.98 ) {
-        dadoUsuario.descontoIr = null;
-        dadoUsuario.parcelaDedutivelIr = null;
-    }
-    if(salarioComDescontoInss >= 1903.99 && salarioComDescontoInss <= 2826.65 ) {
-        dadoUsuario.descontoIr = 0.075;
-        dadoUsuario.parcelaDedutivelIr = 142.80;
-    }
-    if(salarioComDescontoInss >= 2826.66 && salarioComDescontoInss <= 3751.05 ) {
-        dadoUsuario.descontoIr = 0.15;
-        dadoUsuario.parcelaDedutivelIr = 354.80;
-    }
-    if(salarioComDescontoInss >= 3751.06 && salarioComDescontoInss <= 4664.68 ) {
-        dadoUsuario.descontoIr = 0.225;
-        dadoUsuario.parcelaDedutivelIr = 636.13;
-    } 
-    if(salarioComDescontoInss > 4664.68) {
-        dadoUsuario.descontoIr = 0.275;
-        dadoUsuario.parcelaDedutivelIr = 869.36;
-    }
-}
-/*
-    Referencia para calculo do valor da hora extra -> https://tangerino.com.br/blog/rh/hora-extra/
-    CONSIDERAÇÕES: base mensal de horas é 200,
-                   periodo de segunda a sexta, 
-                   entre 05:00hrs e 22:00hrs.
-                   
-    - Hora extra vale 50% a mais que a hora normal de trabalho
-*/
-var valorPorHoraExtra = (dadoUsuario.salarioBruto / 200) * 1.5; 
-
-var valorHorasExtras = valorPorHoraExtra * dadoUsuario.quantidadeHorasExtras;
-
-var salarioBase = (dadoUsuario.salarioBruto + valorHorasExtras);
-
-tabelaInss(salarioBase);
-
-//DESCONTO DO INSS
-var valorDescontoInss = descontoInss(salarioBase);
-
-dadoUsuario.faixaDescontoInss = ((valorDescontoInss * 100)/salarioBase);
-
-let valorComDescontoInss = salarioBase - valorDescontoInss;
-
-//DESCONTO DO IR
-descontoIr(valorComDescontoInss);
-
-dadoUsuario.valorDescontadoIr = ((valorComDescontoInss * dadoUsuario.descontoIr ) - dadoUsuario.parcelaDedutivelIr ) 
-
-dadoUsuario.faixaDescontoIr = ((dadoUsuario.valorDescontadoIr * 100)/valorComDescontoInss);
-
-//SALARIO LIQUIDO
-dadoUsuario.salarioLiquido = (salarioBase - dadoUsuario.valorDescontadoIr - valorDescontoInss);
-
-if (valorComDescontoInss < 1903.98){
-    console.log(dadoUsuario.nome + ' você esta isento de receber o recolhimento do Imposto de Renda!');
+if (this.dadosUsuario.salarioBase - this.dadosUsuario.valorDescontadoInss < 1903.98){
+    console.log(this.dadosUsuario.nome + ' você esta isento de receber o recolhimento do Imposto de Renda!');
 }else{
-    console.log(' Nome: ' + dadoUsuario.nome + ' \n Salario bruto: R$' + dadoUsuario.salarioBruto + '\n Valor total de hora extra: R$' + valorHorasExtras + ' \n Porcentagem de desconto do INSS: ' + dadoUsuario.faixaDescontoInss.toFixed(2) + '% \n Valor descontado para o INSS: R$' + valorDescontoInss.toFixed(2) + ' \n Porcentagem de desconto do IR: ' + dadoUsuario.faixaDescontoIr.toFixed(2) + '% \n Valor descontado para o Ir: R$' + dadoUsuario.valorDescontadoIr.toFixed(2) + ' \n Valor do salário líquido: R$' + dadoUsuario.salarioLiquido.toFixed(2));
+    console.log(' Nome: ' + this.dadosUsuario.nome + ' \n' +
+                 'Salario bruto: R$' + this.dadosUsuario.salarioBruto + '\n' + 
+                 ' Valor total de hora extra: R$' + this.dadosUsuario.valorHorasExtras + ' \n' +
+                 ' Porcentagem de desconto do INSS: ' + this.dadosUsuario.faixaDescontoInss.toFixed(2) + '% \n' + 
+                 ' Valor descontado para o INSS: R$' + this.dadosUsuario.valorDescontoInss.toFixed(2) + ' \n' + 
+                 ' Porcentagem de desconto do IR: ' + this.dadosUsuario.faixaDescontoIr.toFixed(2) + '% \n ' + 
+                 ' Valor descontado para o Ir: R$' + this.dadosUsuario.valorDescontadoIr.toFixed(2) + ' \n' +
+                 ' Valor do salário líquido: R$' + this.dadosUsuario.salarioLiquido.toFixed(2));
 }
